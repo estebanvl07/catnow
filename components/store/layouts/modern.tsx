@@ -1,46 +1,47 @@
-"use client"
+"use client";
 
-import type { Store, Product, Section } from "@/lib/types"
-import { useCartStore } from "@/lib/cart-store"
-import { CartDrawer } from "@/components/store/cart-drawer"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import type { Store, Product, Section } from "@/lib/types";
+import { useCartStore } from "@/lib/cart-store";
+import { CartDrawer } from "@/components/store/cart-drawer";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Search, ShoppingBag, Package, ArrowUpDown } from "lucide-react"
+} from "@/components/ui/select";
+import { Search, ShoppingBag, Package, ArrowUpDown } from "lucide-react";
+import { ProductDetailModal } from "@/components/store/product-detail-modal";
 
 interface ModernLayoutProps {
-  store: Store
-  products: Product[]
-  sections: Section[]
+  store: Store;
+  products: Product[];
+  sections: Section[];
 }
 
 export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
-  const { addItem } = useCartStore()
-  const [selectedSection, setSelectedSection] = useState<string>("all")
-  const [search, setSearch] = useState("")
-  const [sortBy, setSortBy] = useState<string>("default")
+  const { addItem } = useCartStore();
+  const [selectedSection, setSelectedSection] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<string>("default");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filtered = products
     .filter((p) => p.status === "active")
     .filter((p) =>
       selectedSection === "all" ? true : p.section_id === selectedSection,
     )
-    .filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()),
-    )
+    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
-      if (sortBy === "price_asc") return Number(a.price) - Number(b.price)
-      if (sortBy === "price_desc") return Number(b.price) - Number(a.price)
-      if (sortBy === "name") return a.name.localeCompare(b.name)
-      return 0
-    })
+      if (sortBy === "price_asc") return Number(a.price) - Number(b.price);
+      if (sortBy === "price_desc") return Number(b.price) - Number(a.price);
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      return 0;
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,7 +69,10 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
                 className="w-64 pl-9"
               />
             </div>
-            <CartDrawer whatsappNumber={store.whatsapp_number} storeName={store.name} />
+            <CartDrawer
+              whatsappNumber={store.whatsapp_number}
+              storeName={store.name}
+            />
           </div>
         </div>
         <div className="border-b border-border" />
@@ -160,7 +164,11 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
             {filtered.map((product) => (
               <div
                 key={product.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:shadow-lg"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:shadow-lg cursor-pointer"
+                onClick={() => {
+                  setSelectedProduct(product);
+                  setIsModalOpen(true);
+                }}
               >
                 {product.image_url ? (
                   <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
@@ -189,7 +197,13 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
                     <span className="text-xl font-bold text-foreground">
                       ${Number(product.price).toFixed(2)}
                     </span>
-                    <Button className="gap-2" onClick={() => addItem(product)}>
+                    <Button
+                      className="gap-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addItem(product);
+                      }}
+                    >
                       <ShoppingBag className="h-4 w-4" />
                       Agregar
                     </Button>
@@ -200,6 +214,11 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
           </div>
         )}
       </div>
+      <ProductDetailModal
+        product={selectedProduct}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
-  )
+  );
 }

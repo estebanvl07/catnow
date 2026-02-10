@@ -1,47 +1,52 @@
-"use client"
+"use client";
 
-import type { Store, Product, Section } from "@/lib/types"
-import { useCartStore } from "@/lib/cart-store"
-import { CartDrawer } from "@/components/store/cart-drawer"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+import type { Store, Product, Section } from "@/lib/types";
+import { useCartStore } from "@/lib/cart-store";
+import { CartDrawer } from "@/components/store/cart-drawer";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Search, ShoppingBag, Package, ArrowUpDown } from "lucide-react"
+} from "@/components/ui/select";
+import { Search, ShoppingBag, Package, ArrowUpDown } from "lucide-react";
+import { ProductDetailModal } from "@/components/store/product-detail-modal";
 
 interface ClassicLayoutProps {
-  store: Store
-  products: Product[]
-  sections: Section[]
+  store: Store;
+  products: Product[];
+  sections: Section[];
 }
 
-export function ClassicLayout({ store, products, sections }: ClassicLayoutProps) {
-  const { addItem } = useCartStore()
-  const [selectedSection, setSelectedSection] = useState<string>("all")
-  const [search, setSearch] = useState("")
-  const [sortBy, setSortBy] = useState<string>("default")
+export function ClassicLayout({
+  store,
+  products,
+  sections,
+}: ClassicLayoutProps) {
+  const { addItem } = useCartStore();
+  const [selectedSection, setSelectedSection] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<string>("default");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filtered = products
     .filter((p) => p.status === "active")
     .filter((p) =>
       selectedSection === "all" ? true : p.section_id === selectedSection,
     )
-    .filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()),
-    )
+    .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
-      if (sortBy === "price_asc") return Number(a.price) - Number(b.price)
-      if (sortBy === "price_desc") return Number(b.price) - Number(a.price)
-      if (sortBy === "name") return a.name.localeCompare(b.name)
-      return 0
-    })
+      if (sortBy === "price_asc") return Number(a.price) - Number(b.price);
+      if (sortBy === "price_desc") return Number(b.price) - Number(a.price);
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      return 0;
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,7 +64,10 @@ export function ClassicLayout({ store, products, sections }: ClassicLayoutProps)
             )}
             <h1 className="text-lg font-bold text-foreground">{store.name}</h1>
           </div>
-          <CartDrawer whatsappNumber={store.whatsapp_number} storeName={store.name} />
+          <CartDrawer
+            whatsappNumber={store.whatsapp_number}
+            storeName={store.name}
+          />
         </div>
       </header>
 
@@ -152,7 +160,11 @@ export function ClassicLayout({ store, products, sections }: ClassicLayoutProps)
               {filtered.map((product) => (
                 <div
                   key={product.id}
-                  className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30"
+                  className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/30 cursor-pointer"
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setIsModalOpen(true);
+                  }}
                 >
                   {product.image_url ? (
                     <div className="aspect-square w-full overflow-hidden bg-muted">
@@ -184,7 +196,10 @@ export function ClassicLayout({ store, products, sections }: ClassicLayoutProps)
                       <Button
                         size="sm"
                         className="gap-1.5"
-                        onClick={() => addItem(product)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addItem(product);
+                        }}
                       >
                         <ShoppingBag className="h-3.5 w-3.5" />
                         Agregar
@@ -197,6 +212,12 @@ export function ClassicLayout({ store, products, sections }: ClassicLayoutProps)
           )}
         </div>
       </div>
+
+      <ProductDetailModal
+        product={selectedProduct}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
-  )
+  );
 }

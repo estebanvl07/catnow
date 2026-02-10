@@ -1,72 +1,68 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useCallback } from "react"
-import { createClient } from "@/lib/supabase/client"
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  Loader2,
-  Package,
-  Search,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Plus, Pencil, Trash2, Loader2, Package, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Switch } from "@/components/ui/switch"
-import { toast } from "sonner"
-import type { Product, Section } from "@/lib/types"
+} from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import type { Product, Section } from "@/lib/types";
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [sections, setSections] = useState<Section[]>([])
-  const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<Product | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [storeId, setStoreId] = useState<string | null>(null)
-  const [search, setSearch] = useState("")
-  const [filterSection, setFilterSection] = useState<string>("all")
+  const [products, setProducts] = useState<Product[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Product | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterSection, setFilterSection] = useState<string>("all");
 
   // Form state
-  const [formName, setFormName] = useState("")
-  const [formDesc, setFormDesc] = useState("")
-  const [formPrice, setFormPrice] = useState("")
-  const [formSection, setFormSection] = useState<string>("none")
-  const [formImageUrl, setFormImageUrl] = useState("")
-  const [formActive, setFormActive] = useState(true)
+  const [formName, setFormName] = useState("");
+  const [formDesc, setFormDesc] = useState("");
+  const [formPrice, setFormPrice] = useState("");
+  const [formSection, setFormSection] = useState<string>("none");
+  const [formImageUrl, setFormImageUrl] = useState<string | undefined>(
+    undefined,
+  );
+  const [formActive, setFormActive] = useState(true);
 
   const fetchData = useCallback(async () => {
-    const supabase = createClient()
+    const supabase = createClient();
     const {
       data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
     const { data: store } = await supabase
       .from("stores")
       .select("id")
       .eq("user_id", user.id)
-      .single()
+      .single();
 
-    if (!store) return
-    setStoreId(store.id)
+    if (!store) return;
+    setStoreId(store.id);
 
     const [productsRes, sectionsRes] = await Promise.all([
       supabase
@@ -79,43 +75,43 @@ export default function AdminProductsPage() {
         .select("*")
         .eq("store_id", store.id)
         .order("sort_order", { ascending: true }),
-    ])
+    ]);
 
-    setProducts(productsRes.data || [])
-    setSections(sectionsRes.data || [])
-    setLoading(false)
-  }, [])
+    setProducts(productsRes.data || []);
+    setSections(sectionsRes.data || []);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    fetchData();
+  }, [fetchData]);
 
   function openCreate() {
-    setEditing(null)
-    setFormName("")
-    setFormDesc("")
-    setFormPrice("")
-    setFormSection("none")
-    setFormImageUrl("")
-    setFormActive(true)
-    setDialogOpen(true)
+    setEditing(null);
+    setFormName("");
+    setFormDesc("");
+    setFormPrice("");
+    setFormSection("none");
+    setFormImageUrl(undefined);
+    setFormActive(true);
+    setDialogOpen(true);
   }
 
   function openEdit(product: Product) {
-    setEditing(product)
-    setFormName(product.name)
-    setFormDesc(product.description || "")
-    setFormPrice(String(product.price))
-    setFormSection(product.section_id || "none")
-    setFormImageUrl(product.image_url || "")
-    setFormActive(product.status === "active")
-    setDialogOpen(true)
+    setEditing(product);
+    setFormName(product.name);
+    setFormDesc(product.description || "");
+    setFormPrice(String(product.price));
+    setFormSection(product.section_id || "none");
+    setFormImageUrl(product.image_url || undefined);
+    setFormActive(product.status === "active");
+    setDialogOpen(true);
   }
 
   async function handleSave() {
-    if (!formName.trim() || !storeId || !formPrice) return
-    setSaving(true)
-    const supabase = createClient()
+    if (!formName.trim() || !storeId || !formPrice) return;
+    setSaving(true);
+    const supabase = createClient();
 
     const payload = {
       store_id: storeId,
@@ -123,58 +119,56 @@ export default function AdminProductsPage() {
       description: formDesc.trim() || null,
       price: Number.parseFloat(formPrice),
       section_id: formSection === "none" ? null : formSection,
-      image_url: formImageUrl.trim() || null,
+      image_url: formImageUrl?.trim() || null,
       status: formActive ? ("active" as const) : ("inactive" as const),
       updated_at: new Date().toISOString(),
-    }
+    };
 
     if (editing) {
       const { error } = await supabase
         .from("products")
         .update(payload)
-        .eq("id", editing.id)
+        .eq("id", editing.id);
 
       if (error) {
-        toast.error("Error al actualizar el producto")
+        toast.error("Error al actualizar el producto");
       } else {
-        toast.success("Producto actualizado")
+        toast.success("Producto actualizado");
       }
     } else {
-      const { error } = await supabase.from("products").insert(payload)
+      const { error } = await supabase.from("products").insert(payload);
 
       if (error) {
-        toast.error("Error al crear el producto")
+        toast.error("Error al crear el producto");
       } else {
-        toast.success("Producto creado")
+        toast.success("Producto creado");
       }
     }
 
-    setSaving(false)
-    setDialogOpen(false)
-    fetchData()
+    setSaving(false);
+    setDialogOpen(false);
+    fetchData();
   }
 
   async function handleDelete(id: string) {
-    const supabase = createClient()
-    const { error } = await supabase.from("products").delete().eq("id", id)
+    const supabase = createClient();
+    const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) {
-      toast.error("Error al eliminar el producto")
+      toast.error("Error al eliminar el producto");
     } else {
-      toast.success("Producto eliminado")
-      fetchData()
+      toast.success("Producto eliminado");
+      fetchData();
     }
   }
 
-  const sectionMap = new Map(sections.map((s) => [s.id, s.name]))
+  const sectionMap = new Map(sections.map((s) => [s.id, s.name]));
 
   const filtered = products.filter((p) => {
-    const matchesSearch = p.name
-      .toLowerCase()
-      .includes(search.toLowerCase())
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchesSection =
-      filterSection === "all" || p.section_id === filterSection
-    return matchesSearch && matchesSection
-  })
+      filterSection === "all" || p.section_id === filterSection;
+    return matchesSearch && matchesSection;
+  });
 
   return (
     <div>
@@ -184,7 +178,8 @@ export default function AdminProductsPage() {
             Productos
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {products.length} producto{products.length !== 1 ? "s" : ""} registrado{products.length !== 1 ? "s" : ""}
+            {products.length} producto{products.length !== 1 ? "s" : ""}{" "}
+            registrado{products.length !== 1 ? "s" : ""}
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -252,13 +247,13 @@ export default function AdminProductsPage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Label>
-                  URL de imagen{" "}
+                  Imagen del producto{" "}
                   <span className="text-muted-foreground">(opcional)</span>
                 </Label>
-                <Input
-                  placeholder="https://..."
+                <ImageUpload
                   value={formImageUrl}
-                  onChange={(e) => setFormImageUrl(e.target.value)}
+                  onChange={setFormImageUrl}
+                  disabled={saving}
                 />
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border p-3">
@@ -401,5 +396,5 @@ export default function AdminProductsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
