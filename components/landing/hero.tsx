@@ -1,6 +1,6 @@
-import Link from "next/link"
-import { ArrowRight, Zap, Globe, MessageCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { ArrowRight, Zap, Globe, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (
@@ -12,12 +12,12 @@ export function HeroSection() {
           <span>Tu catalogo online en minutos</span>
         </div>
 
-        <h1 className="max-w-4xl text-balance text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
+        <h1 className="max-w-4xl text-balance text-4xl font-bold tracking-tight text-foreground md:text-6xl">
           Vende mas por redes sociales con tu{" "}
           <span className="text-primary">catalogo digital</span>
         </h1>
 
-        <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground md:text-xl">
+        <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">
           Crea tu catalogo personalizado, comparte el enlace con tus clientes y
           recibe pedidos directamente en tu WhatsApp. Sin complicaciones.
         </p>
@@ -29,7 +29,12 @@ export function HeroSection() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-          <Button size="lg" variant="outline" asChild className="text-base bg-transparent">
+          <Button
+            size="lg"
+            variant="outline"
+            asChild
+            className="text-base bg-transparent"
+          >
             <a href="#how-it-works">Ver como funciona</a>
           </Button>
         </div>
@@ -37,21 +42,33 @@ export function HeroSection() {
         <div className="mt-16 grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-6">
             <Globe className="h-8 w-8 text-primary" />
-            <span className="text-sm font-medium text-foreground">Tu propia URL</span>
-            <span className="text-xs text-muted-foreground">tutienda.catalogoya.com</span>
+            <span className="text-sm font-medium text-foreground">
+              Tu propia URL
+            </span>
+            <span className="text-xs text-muted-foreground">
+              tutienda.catalogoya.com
+            </span>
           </div>
           <div className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-6">
             <MessageCircle className="h-8 w-8 text-primary" />
-            <span className="text-sm font-medium text-foreground">Pedidos por WhatsApp</span>
-            <span className="text-xs text-muted-foreground">Directo a tu telefono</span>
+            <span className="text-sm font-medium text-foreground">
+              Pedidos por WhatsApp
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Directo a tu telefono
+            </span>
           </div>
           <div className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-6">
             <Zap className="h-8 w-8 text-primary" />
-            <span className="text-sm font-medium text-foreground">Listo en minutos</span>
-            <span className="text-xs text-muted-foreground">Sin conocimientos tecnicos</span>
+            <span className="text-sm font-medium text-foreground">
+              Listo en minutos
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Sin conocimientos tecnicos
+            </span>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

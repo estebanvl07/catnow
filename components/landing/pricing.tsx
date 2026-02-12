@@ -1,16 +1,16 @@
-import Link from "next/link"
-import { Check, MessageCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import Link from "next/link";
+import { Check, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const plans = [
   {
-    name: "Small",
-    price: "$9",
+    name: "Free",
+    price: "$0",
     period: "/mes",
     description: "Ideal para empezar tu negocio online.",
     features: [
-      "Hasta 100 productos",
+      "Hasta 50 productos",
       "1 catalogo personalizado",
       "Pedidos por WhatsApp",
       "3 disenos de catalogo",
@@ -21,7 +21,7 @@ const plans = [
   },
   {
     name: "Medium",
-    price: "$19",
+    price: "$19.900",
     period: "/mes",
     description: "Para negocios en crecimiento.",
     features: [
@@ -53,7 +53,7 @@ const plans = [
     cta: "Empezar ahora",
     highlighted: false,
   },
-]
+];
 
 export function PricingSection() {
   return (
@@ -64,7 +64,8 @@ export function PricingSection() {
             Planes y precios
           </h2>
           <p className="mt-4 text-pretty text-lg leading-relaxed text-muted-foreground">
-            Elige el plan que mejor se adapte a tu negocio. Sin contratos, cancela cuando quieras.
+            Elige el plan que mejor se adapte a tu negocio. Sin contratos,
+            cancela cuando quieras.
           </p>
         </div>
 
@@ -102,8 +103,13 @@ export function PricingSection() {
 
               <ul className="mb-8 flex flex-1 flex-col gap-3">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-3 text-sm text-foreground">
-                    <Check className={`h-4 w-4 shrink-0 ${plan.highlighted ? "text-primary" : "text-muted-foreground"}`} />
+                  <li
+                    key={feature}
+                    className="flex items-center gap-3 text-sm text-foreground"
+                  >
+                    <Check
+                      className={`h-4 w-4 shrink-0 ${plan.highlighted ? "text-primary" : "text-muted-foreground"}`}
+                    />
                     {feature}
                   </li>
                 ))}
@@ -131,7 +137,11 @@ export function PricingSection() {
                 Necesitas mas productos o funcionalidades especiales? Hablemos.
               </p>
             </div>
-            <Button variant="outline" asChild className="shrink-0 gap-2 bg-transparent">
+            <Button
+              variant="outline"
+              asChild
+              className="shrink-0 gap-2 bg-transparent"
+            >
               <a href="#contact">
                 <MessageCircle className="h-4 w-4" />
                 Contactanos
@@ -141,5 +151,5 @@ export function PricingSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
