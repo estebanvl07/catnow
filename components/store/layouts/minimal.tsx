@@ -2,6 +2,7 @@
 
 import type { Store, Product, Section } from "@/lib/types";
 import { useCartStore } from "@/lib/cart-store";
+import { formatPrice } from "@/lib/format-price";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,7 @@ export function MinimalLayout({
           <CartDrawer
             whatsappNumber={store.whatsapp_number}
             storeName={store.name}
+            currency={store.currency ?? "USD"}
           />
         </div>
       </header>
@@ -182,7 +184,7 @@ export function MinimalLayout({
                         </div>
                         <div className="flex shrink-0 items-center gap-3">
                           <span className="text-base font-bold text-foreground">
-                            ${Number(product.price).toFixed(2)}
+                            {formatPrice(Number(product.price), store.currency ?? "USD")}
                           </span>
                           <Button
                             size="icon"
@@ -210,6 +212,7 @@ export function MinimalLayout({
         product={selectedProduct}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        currency={store.currency ?? "USD"}
       />
     </div>
   );

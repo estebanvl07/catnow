@@ -2,6 +2,7 @@
 
 import type { Store, Product, Section } from "@/lib/types";
 import { useCartStore } from "@/lib/cart-store";
+import { formatPrice } from "@/lib/format-price";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
             <CartDrawer
               whatsappNumber={store.whatsapp_number}
               storeName={store.name}
+              currency={store.currency ?? "USD"}
             />
           </div>
         </div>
@@ -195,7 +197,7 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
                   )}
                   <div className="mt-auto flex items-center justify-between gap-3 pt-4">
                     <span className="text-xl font-bold text-foreground">
-                      ${Number(product.price).toFixed(2)}
+                      {formatPrice(Number(product.price), store.currency ?? "USD")}
                     </span>
                     <Button
                       className="gap-2"
@@ -218,6 +220,7 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
         product={selectedProduct}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        currency={store.currency ?? "USD"}
       />
     </div>
   );

@@ -16,6 +16,7 @@ export interface Store {
   whatsapp_number: string | null
   primary_color: string
   layout_template: LayoutTemplate
+  currency: string
   plan: PlanType
   created_at: string
   updated_at: string

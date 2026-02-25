@@ -11,6 +11,7 @@ export function mapPrismaStoreToStore(s: PrismaStore): Store {
     whatsapp_number: s.whatsappNumber,
     primary_color: s.primaryColor,
     layout_template: s.layoutTemplate as Store["layout_template"],
+    currency: s.currency ?? "USD",
     plan: s.plan as Store["plan"],
     created_at: s.createdAt.toISOString(),
     updated_at: s.updatedAt.toISOString(),

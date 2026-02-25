@@ -1,6 +1,7 @@
 "use client"
 
 import { useCartStore } from "@/lib/cart-store"
+import { formatPrice } from "@/lib/format-price"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -17,9 +18,10 @@ import { useState } from "react"
 interface CartDrawerProps {
   whatsappNumber: string | null
   storeName: string
+  currency?: string
 }
 
-export function CartDrawer({ whatsappNumber, storeName }: CartDrawerProps) {
+export function CartDrawer({ whatsappNumber, storeName, currency = "USD" }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, clearCart, getTotal, getItemCount } =
     useCartStore()
   const [open, setOpen] = useState(false)
@@ -33,10 +35,10 @@ export function CartDrawer({ whatsappNumber, storeName }: CartDrawerProps) {
     const itemLines = items
       .map(
         (item, i) =>
-          `${i + 1}. *${item.product.name}* x${item.quantity} - $${(Number(item.product.price) * item.quantity).toFixed(2)}`,
+          `${i + 1}. *${item.product.name}* x${item.quantity} - ${formatPrice(Number(item.product.price) * item.quantity, currency)}`,
       )
       .join("\n")
-    const footer = `\n\n*Total: $${total.toFixed(2)}*\n\nGracias!`
+    const footer = `\n\n*Total: ${formatPrice(total, currency)}*\n\nGracias!`
     const message = encodeURIComponent(header + itemLines + footer)
     const cleanNumber = whatsappNumber.replace(/\D/g, "")
     const url = `https://wa.me/${cleanNumber}?text=${message}`
@@ -92,7 +94,7 @@ export function CartDrawer({ whatsappNumber, storeName }: CartDrawerProps) {
                         {item.product.name}
                       </h4>
                       <p className="text-sm font-semibold text-foreground">
-                        ${Number(item.product.price).toFixed(2)}
+                        {formatPrice(Number(item.product.price), currency)}
                       </p>
                       <div className="mt-1.5 flex items-center gap-1.5">
                         <Button
@@ -137,7 +139,7 @@ export function CartDrawer({ whatsappNumber, storeName }: CartDrawerProps) {
               <div className="flex items-center justify-between">
                 <span className="text-base font-medium text-foreground">Total</span>
                 <span className="text-lg font-bold text-foreground">
-                  ${total.toFixed(2)}
+                  {formatPrice(total, currency)}
                 </span>
               </div>
               <Button

@@ -2,6 +2,7 @@
 
 import type { Product } from "@/lib/types";
 import { useCartStore } from "@/lib/cart-store";
+import { formatPrice } from "@/lib/format-price";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,12 +17,14 @@ interface ProductDetailModalProps {
   product: Product | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  currency?: string;
 }
 
 export function ProductDetailModal({
   product,
   open,
   onOpenChange,
+  currency = "USD",
 }: ProductDetailModalProps) {
   const { addItem } = useCartStore();
   const [isAdding, setIsAdding] = useState(false);
@@ -68,7 +71,7 @@ export function ProductDetailModal({
           <div className="flex flex-col gap-4">
             <div>
               <h3 className="text-2xl font-bold text-foreground">
-                ${Number(product.price).toFixed(2)}
+                {formatPrice(Number(product.price), currency)}
               </h3>
             </div>
 

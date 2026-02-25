@@ -2,6 +2,7 @@
 
 import type { Store, Product, Section } from "@/lib/types"
 import { useCartStore } from "@/lib/cart-store"
+import { formatPrice } from "@/lib/format-price"
 import { CartDrawer } from "@/components/store/cart-drawer"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -67,6 +68,7 @@ export function CompactLayout({
           <CartDrawer
             whatsappNumber={store.whatsapp_number}
             storeName={store.name}
+            currency={store.currency ?? "USD"}
           />
         </div>
       </header>
@@ -146,7 +148,7 @@ export function CompactLayout({
                     {product.name}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    ${Number(product.price).toFixed(2)}
+                    {formatPrice(Number(product.price), store.currency ?? "USD")}
                   </p>
                 </div>
                 <Button
@@ -170,6 +172,7 @@ export function CompactLayout({
         product={selectedProduct}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        currency={store.currency ?? "USD"}
       />
     </div>
   )

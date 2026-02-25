@@ -28,6 +28,19 @@ const colorOptions = [
   { value: "slate", label: "Slate", class: "bg-slate-500" },
 ]
 
+const currencyOptions = [
+  { value: "USD", label: "Dólar estadounidense (USD)" },
+  { value: "EUR", label: "Euro (EUR)" },
+  { value: "GBP", label: "Libra esterlina (GBP)" },
+  { value: "MXN", label: "Peso mexicano (MXN)" },
+  { value: "COP", label: "Peso colombiano (COP)" },
+  { value: "ARS", label: "Peso argentino (ARS)" },
+  { value: "CLP", label: "Peso chileno (CLP)" },
+  { value: "PEN", label: "Sol peruano (PEN)" },
+  { value: "BRL", label: "Real brasileño (BRL)" },
+  { value: "VES", label: "Bolívar venezolano (VES)" },
+]
+
 export default function AdminSettingsPage() {
   const [store, setStore] = useState<Store | null>(null)
   const [loading, setLoading] = useState(true)
@@ -39,6 +52,7 @@ export default function AdminSettingsPage() {
   const [logoUrl, setLogoUrl] = useState("")
   const [primaryColor, setPrimaryColor] = useState("indigo")
   const [layoutTemplate, setLayoutTemplate] = useState<LayoutTemplate>("classic")
+  const [currency, setCurrency] = useState("USD")
 
   const fetchStore = useCallback(async () => {
     const data = await getMyStore()
@@ -49,6 +63,7 @@ export default function AdminSettingsPage() {
       setLogoUrl(data.logo_url || "")
       setPrimaryColor(data.primary_color || "indigo")
       setLayoutTemplate(data.layout_template || "classic")
+      setCurrency(data.currency || "USD")
     }
     setLoading(false)
   }, [])
@@ -68,6 +83,7 @@ export default function AdminSettingsPage() {
       logoUrl: logoUrl.trim() || null,
       primaryColor,
       layoutTemplate,
+      currency,
     })
 
     if (res.success) {
@@ -145,6 +161,25 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setLogoUrl(e.target.value)}
                 placeholder="https://..."
               />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label>Moneda</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-full max-w-xs">
+                  <SelectValue placeholder="Selecciona la moneda" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencyOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Los precios del catálogo se mostrarán en esta moneda
+              </p>
             </div>
 
             <Button onClick={handleSave} disabled={saving} className="gap-2 self-end">

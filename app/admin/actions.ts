@@ -240,6 +240,7 @@ export async function updateStore(form: {
   logoUrl: string | null
   primaryColor: string
   layoutTemplate: string
+  currency: string
 }): Promise<{ success: boolean; error?: string }> {
   const storeId = await getStoreId()
   if (!storeId || storeId !== form.storeId)
@@ -253,6 +254,7 @@ export async function updateStore(form: {
         logoUrl: form.logoUrl?.trim() || null,
         primaryColor: form.primaryColor,
         layoutTemplate: form.layoutTemplate,
+        currency: form.currency,
       },
       select: { slug: true },
     })
@@ -260,7 +262,9 @@ export async function updateStore(form: {
     revalidatePath("/admin/settings")
     revalidatePath(`/store/${updated.slug}`)
     return { success: true }
-  } catch {
-    return { success: false, error: "Error al guardar la configuración" }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Error al guardar la configuración"
+    console.error("[updateStore]", err)
+    return { success: false, error: message }
   }
 }

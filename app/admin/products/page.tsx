@@ -32,6 +32,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import type { Product, Section } from "@/lib/types";
+import { formatPrice } from "@/lib/format-price";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -41,6 +42,7 @@ export default function AdminProductsPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [storeCurrency, setStoreCurrency] = useState<string>("USD");
   const [search, setSearch] = useState("");
   const [filterSection, setFilterSection] = useState<string>("all");
 
@@ -59,7 +61,10 @@ export default function AdminProductsPage() {
       getMyStore(),
       getMyProductsAndSections(),
     ]);
-    if (store) setStoreId(store.id);
+    if (store) {
+      setStoreId(store.id);
+      setStoreCurrency(store.currency ?? "USD");
+    }
     if (data) {
       setProducts(data.products);
       setSections(data.sections);
@@ -330,7 +335,7 @@ export default function AdminProductsPage() {
                 )}
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-lg font-bold text-foreground">
-                    ${Number(product.price).toFixed(2)}
+                    {formatPrice(Number(product.price), storeCurrency)}
                   </span>
                   {product.section_id && sectionMap.has(product.section_id) && (
                     <Badge variant="outline" className="text-xs">
