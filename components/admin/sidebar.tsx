@@ -39,21 +39,25 @@ export function AdminSidebar({
     await signOut({ callbackUrl: "/" })
   }
 
+  const headerContent = (
+    <div className="flex items-center gap-2 border-b border-border px-4 py-4 md:px-5 md:py-5">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
+        <ShoppingBag className="h-4 w-4 text-primary-foreground" />
+      </div>
+      <div className="min-w-0 flex-1 truncate">
+        <p className="truncate text-sm font-semibold text-foreground">
+          {store.name}
+        </p>
+        <p className="truncate text-xs text-muted-foreground">
+          /{store.slug}
+        </p>
+      </div>
+    </div>
+  )
+
   const sidebarContent = (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-border px-5 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <ShoppingBag className="h-4 w-4 text-primary-foreground" />
-        </div>
-        <div className="flex-1 truncate">
-          <p className="truncate text-sm font-semibold text-foreground">
-            {store.name}
-          </p>
-          <p className="truncate text-xs text-muted-foreground">
-            /{store.slug}
-          </p>
-        </div>
-      </div>
+      <div className="hidden md:block">{headerContent}</div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3">
         {navItems.map((item) => {
@@ -109,30 +113,39 @@ export function AdminSidebar({
 
   return (
     <>
-      {/* Mobile toggle */}
-      <div className="fixed left-4 top-4 z-50 md:hidden">
+      {/* Mobile: header fijo arriba con menú expandible */}
+      <header className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center gap-3 border-b border-border bg-card px-4 md:hidden">
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="bg-background"
+          aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
         >
-          {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-      </div>
+        <div className="min-w-0 flex-1 truncate">
+          <p className="truncate text-sm font-semibold text-foreground">
+            {store.name}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            /{store.slug}
+          </p>
+        </div>
+      </header>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden"
           onClick={() => setMobileOpen(false)}
+          aria-hidden
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar: en desktop estático; en mobile panel deslizable bajo el header */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 border-r border-border bg-card transition-transform md:static md:translate-x-0",
+          "fixed left-0 top-14 bottom-0 z-40 w-64 border-r border-border bg-card transition-transform md:static md:top-0 md:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

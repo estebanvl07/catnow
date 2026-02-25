@@ -30,7 +30,7 @@ export default async function AdminLayout({
   return (
     <div className="flex min-h-screen bg-background">
       <AdminSidebar store={store} userEmail={session.user.email ?? ""} />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pt-14 md:pt-0">
         <div className="mx-auto max-w-6xl p-6 md:p-8">{children}</div>
       </main>
     </div>
