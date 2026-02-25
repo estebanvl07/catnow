@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Search, Plus, Package, ArrowUpDown } from "lucide-react"
-import { ProductDetailModal } from "@/components/store/product-detail-modal"
+import { getProductFirstImage } from "@/lib/product-image"
+import Link from "next/link"
 
 interface CompactLayoutProps {
   store: Store
@@ -32,9 +33,6 @@ export function CompactLayout({
   const [selectedSection, setSelectedSection] = useState<string>("all")
   const [search, setSearch] = useState("")
   const [sortBy, setSortBy] = useState<string>("default")
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
   const filtered = products
     .filter((p) => p.status === "active")
     .filter((p) =>
@@ -123,17 +121,14 @@ export function CompactLayout({
         ) : (
           <div className="flex flex-col gap-1">
             {filtered.map((product) => (
-              <div
+              <Link
                 key={product.id}
-                className="flex items-center gap-3 rounded-lg border border-border bg-card px-2.5 py-2 transition-colors hover:border-primary/30 cursor-pointer"
-                onClick={() => {
-                  setSelectedProduct(product)
-                  setIsModalOpen(true)
-                }}
+                href={`/store/${store.slug}/product/${product.id}`}
+                className="flex items-center gap-3 rounded-lg border border-border bg-card px-2.5 py-2 transition-colors hover:border-primary/30"
               >
-                {product.image_url ? (
+                {getProductFirstImage(product) ? (
                   <img
-                    src={product.image_url || "/placeholder.svg"}
+                    src={getProductFirstImage(product) ?? "/placeholder.svg"}
                     alt={product.name}
                     className="h-11 w-11 shrink-0 rounded-md object-cover"
                     crossOrigin="anonymous"
@@ -155,6 +150,7 @@ export function CompactLayout({
                   size="icon"
                   className="h-8 w-8 shrink-0"
                   onClick={(e) => {
+                    e.preventDefault()
                     e.stopPropagation()
                     addItem(product)
                   }}
@@ -162,18 +158,11 @@ export function CompactLayout({
                   <Plus className="h-4 w-4" />
                   <span className="sr-only">Agregar</span>
                 </Button>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
-
-      <ProductDetailModal
-        product={selectedProduct}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        currency={store.currency ?? "USD"}
-      />
     </div>
   )
 }

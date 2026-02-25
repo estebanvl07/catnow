@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ImageUpload } from "@/components/ui/image-upload";
+import { ImageUploadMultiple } from "@/components/ui/image-upload-multiple";
 import {
   Select,
   SelectContent,
@@ -51,9 +51,9 @@ export default function AdminProductsPage() {
   const [formDesc, setFormDesc] = useState("");
   const [formPrice, setFormPrice] = useState("");
   const [formSection, setFormSection] = useState<string>("none");
-  const [formImageUrl, setFormImageUrl] = useState<string | undefined>(
-    undefined,
-  );
+  const [formImageUrls, setFormImageUrls] = useState<string[]>([]);
+  const [formSizes, setFormSizes] = useState<string>("");
+  const [formColors, setFormColors] = useState<string>("");
   const [formActive, setFormActive] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -82,7 +82,9 @@ export default function AdminProductsPage() {
     setFormDesc("");
     setFormPrice("");
     setFormSection("none");
-    setFormImageUrl(undefined);
+    setFormImageUrls([]);
+    setFormSizes("");
+    setFormColors("");
     setFormActive(true);
     setDialogOpen(true);
   }
@@ -93,7 +95,15 @@ export default function AdminProductsPage() {
     setFormDesc(product.description || "");
     setFormPrice(String(product.price));
     setFormSection(product.section_id || "none");
-    setFormImageUrl(product.image_url || undefined);
+    setFormImageUrls(
+      product.image_urls?.length
+        ? product.image_urls
+        : product.image_url
+          ? [product.image_url]
+          : [],
+    );
+    setFormSizes((product.sizes ?? []).join(", "));
+    setFormColors((product.colors ?? []).join(", "));
     setFormActive(product.status === "active");
     setDialogOpen(true);
   }
@@ -102,13 +112,24 @@ export default function AdminProductsPage() {
     if (!formName.trim() || !storeId || !formPrice) return;
     setSaving(true);
 
+    const sizes = formSizes
+      .split(/[,;]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const colors = formColors
+      .split(/[,;]/)
+      .map((c) => c.trim())
+      .filter(Boolean);
     const payload = {
       storeId,
       name: formName.trim(),
       description: formDesc.trim() || null,
       price: Number.parseFloat(formPrice),
       sectionId: formSection === "none" ? null : formSection,
-      imageUrl: formImageUrl?.trim() || null,
+      imageUrl: formImageUrls[0] ?? null,
+      imageUrls: formImageUrls,
+      sizes,
+      colors,
       status: formActive ? ("active" as const) : ("inactive" as const),
     };
 
@@ -220,13 +241,36 @@ export default function AdminProductsPage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Label>
-                  Imagen del producto{" "}
+                  Imágenes del producto{" "}
                   <span className="text-muted-foreground">(opcional)</span>
                 </Label>
-                <ImageUpload
-                  value={formImageUrl}
-                  onChange={setFormImageUrl}
+                <ImageUploadMultiple
+                  value={formImageUrls}
+                  onChange={setFormImageUrls}
                   disabled={saving}
+                  maxImages={10}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>
+                  Tallas{" "}
+                  <span className="text-muted-foreground">(opcional, separadas por coma)</span>
+                </Label>
+                <Input
+                  placeholder="Ej: XS, S, M, L, XL o 36, 38, 40, 42"
+                  value={formSizes}
+                  onChange={(e) => setFormSizes(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>
+                  Colores{" "}
+                  <span className="text-muted-foreground">(opcional, separados por coma)</span>
+                </Label>
+                <Input
+                  placeholder="Ej: Rojo, Azul, Negro, Blanco"
+                  value={formColors}
+                  onChange={(e) => setFormColors(e.target.value)}
                 />
               </div>
               <div className="flex items-center justify-between rounded-lg border border-border p-3">
@@ -300,10 +344,10 @@ export default function AdminProductsPage() {
               key={product.id}
               className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-colors hover:border-primary/30"
             >
-              {product.image_url ? (
+              {(product.image_urls?.length ? product.image_urls[0] : product.image_url) ? (
                 <div className="relative aspect-video w-full bg-muted">
                   <img
-                    src={product.image_url || "/placeholder.svg"}
+                    src={(product.image_urls?.length ? product.image_urls[0] : product.image_url) ?? "/placeholder.svg"}
                     alt={product.name}
                     className="h-full w-full object-cover"
                     crossOrigin="anonymous"

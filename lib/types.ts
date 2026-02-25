@@ -40,6 +40,9 @@ export interface Product {
   description: string | null
   price: number
   image_url: string | null
+  image_urls: string[]
+  sizes: string[]
+  colors: string[]
   status: ProductStatus
   created_at: string
   updated_at: string
@@ -48,6 +51,8 @@ export interface Product {
 export interface CartItem {
   product: Product
   quantity: number
+  size?: string | null
+  color?: string | null
 }
 
 export const PLAN_LIMITS: Record<PlanType, number> = {

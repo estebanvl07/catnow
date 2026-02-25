@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, ShoppingBag, Package, ArrowUpDown } from "lucide-react";
-import { ProductDetailModal } from "@/components/store/product-detail-modal";
+import { getProductFirstImage } from "@/lib/product-image";
+import Link from "next/link";
 
 interface ModernLayoutProps {
   store: Store;
@@ -28,9 +29,6 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
   const [selectedSection, setSelectedSection] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<string>("default");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const filtered = products
     .filter((p) => p.status === "active")
     .filter((p) =>
@@ -164,18 +162,15 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {filtered.map((product) => (
-              <div
+              <Link
                 key={product.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:shadow-lg cursor-pointer"
-                onClick={() => {
-                  setSelectedProduct(product);
-                  setIsModalOpen(true);
-                }}
+                href={`/store/${store.slug}/product/${product.id}`}
+                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:shadow-lg"
               >
-                {product.image_url ? (
+                {getProductFirstImage(product) ? (
                   <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
                     <img
-                      src={product.image_url || "/placeholder.svg"}
+                      src={getProductFirstImage(product) ?? "/placeholder.svg"}
                       alt={product.name}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       crossOrigin="anonymous"
@@ -202,6 +197,7 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
                     <Button
                       className="gap-2"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         addItem(product);
                       }}
@@ -211,17 +207,11 @@ export function ModernLayout({ store, products, sections }: ModernLayoutProps) {
                     </Button>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
       </div>
-      <ProductDetailModal
-        product={selectedProduct}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        currency={store.currency ?? "USD"}
-      />
     </div>
   );
 }

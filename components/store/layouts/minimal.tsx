@@ -15,7 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Plus, Package, ArrowUpDown } from "lucide-react";
-import { ProductDetailModal } from "@/components/store/product-detail-modal";
+import { getProductFirstImage } from "@/lib/product-image";
+import Link from "next/link";
 
 interface MinimalLayoutProps {
   store: Store;
@@ -32,9 +33,6 @@ export function MinimalLayout({
   const [selectedSection, setSelectedSection] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<string>("default");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const filtered = products
     .filter((p) => p.status === "active")
     .filter((p) =>
@@ -152,17 +150,14 @@ export function MinimalLayout({
                   )}
                   <div className="flex flex-col gap-2">
                     {sectionProducts.map((product) => (
-                      <div
+                      <Link
                         key={product.id}
-                        className="flex items-center gap-4 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/30 cursor-pointer"
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setIsModalOpen(true);
-                        }}
+                        href={`/store/${store.slug}/product/${product.id}`}
+                        className="flex items-center gap-4 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/30"
                       >
-                        {product.image_url ? (
+                        {getProductFirstImage(product) ? (
                           <img
-                            src={product.image_url || "/placeholder.svg"}
+                            src={getProductFirstImage(product) ?? "/placeholder.svg"}
                             alt={product.name}
                             className="h-16 w-16 shrink-0 rounded-lg object-cover"
                             crossOrigin="anonymous"
@@ -190,6 +185,7 @@ export function MinimalLayout({
                             size="icon"
                             className="h-8 w-8 shrink-0"
                             onClick={(e) => {
+                              e.preventDefault();
                               e.stopPropagation();
                               addItem(product);
                             }}
@@ -198,7 +194,7 @@ export function MinimalLayout({
                             <span className="sr-only">Agregar al carrito</span>
                           </Button>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -207,13 +203,6 @@ export function MinimalLayout({
           </div>
         )}
       </div>
-
-      <ProductDetailModal
-        product={selectedProduct}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        currency={store.currency ?? "USD"}
-      />
     </div>
   );
 }

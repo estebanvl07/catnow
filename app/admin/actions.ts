@@ -21,6 +21,16 @@ async function getStoreId(): Promise<string | null> {
   return store?.id ?? null
 }
 
+async function getStoreSlug(): Promise<string | null> {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return null
+  const store = await prisma.store.findFirst({
+    where: { userId: session.user.id },
+    select: { slug: true },
+  })
+  return store?.slug ?? null
+}
+
 export async function getMyStore(): Promise<Store | null> {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return null
@@ -127,12 +137,19 @@ export async function createProduct(form: {
   price: number
   sectionId: string | null
   imageUrl: string | null
+  imageUrls: string[]
+  sizes: string[]
+  colors: string[]
   status: "active" | "inactive"
 }): Promise<{ success: boolean; error?: string }> {
   const storeId = await getStoreId()
   if (!storeId || storeId !== form.storeId)
     return { success: false, error: "No autorizado" }
   try {
+    const imageUrls = Array.isArray(form.imageUrls) ? form.imageUrls.filter(Boolean) : []
+    const firstImage = imageUrls[0] ?? form.imageUrl?.trim() ?? null
+    const sizes = Array.isArray(form.sizes) ? form.sizes.map((s) => s.trim()).filter(Boolean) : []
+    const colors = Array.isArray(form.colors) ? form.colors.map((c) => c.trim()).filter(Boolean) : []
     await prisma.product.create({
       data: {
         storeId: form.storeId,
@@ -140,12 +157,17 @@ export async function createProduct(form: {
         description: form.description?.trim() || null,
         price: form.price,
         sectionId: form.sectionId || null,
-        imageUrl: form.imageUrl?.trim() || null,
+        imageUrl: firstImage,
+        imageUrls,
+        sizes,
+        colors,
         status: form.status,
       },
     })
     revalidatePath("/admin")
     revalidatePath("/admin/products")
+    const slug = await getStoreSlug()
+    if (slug) revalidatePath(`/store/${slug}`)
     return { success: true }
   } catch {
     return { success: false, error: "Error al crear el producto" }
@@ -161,6 +183,9 @@ export async function updateProduct(
     price: number
     sectionId: string | null
     imageUrl: string | null
+    imageUrls: string[]
+    sizes: string[]
+    colors: string[]
     status: "active" | "inactive"
   }
 ): Promise<{ success: boolean; error?: string }> {
@@ -168,6 +193,10 @@ export async function updateProduct(
   if (!storeId || storeId !== form.storeId)
     return { success: false, error: "No autorizado" }
   try {
+    const imageUrls = Array.isArray(form.imageUrls) ? form.imageUrls.filter(Boolean) : []
+    const firstImage = imageUrls[0] ?? form.imageUrl?.trim() ?? null
+    const sizes = Array.isArray(form.sizes) ? form.sizes.map((s) => s.trim()).filter(Boolean) : []
+    const colors = Array.isArray(form.colors) ? form.colors.map((c) => c.trim()).filter(Boolean) : []
     await prisma.product.updateMany({
       where: { id, storeId },
       data: {
@@ -175,12 +204,20 @@ export async function updateProduct(
         description: form.description?.trim() || null,
         price: form.price,
         sectionId: form.sectionId || null,
-        imageUrl: form.imageUrl?.trim() || null,
+        imageUrl: firstImage,
+        imageUrls,
+        sizes,
+        colors,
         status: form.status,
       },
     })
     revalidatePath("/admin")
     revalidatePath("/admin/products")
+    const slug = await getStoreSlug()
+    if (slug) {
+      revalidatePath(`/store/${slug}`)
+      revalidatePath(`/store/${slug}/product/${id}`)
+    }
     return { success: true }
   } catch {
     return { success: false, error: "Error al actualizar el producto" }

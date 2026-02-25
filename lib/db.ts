@@ -11,7 +11,7 @@ export function mapPrismaStoreToStore(s: PrismaStore): Store {
     whatsapp_number: s.whatsappNumber,
     primary_color: s.primaryColor,
     layout_template: s.layoutTemplate as Store["layout_template"],
-    currency: s.currency ?? "USD",
+    currency: (s as PrismaStore & { currency?: string }).currency ?? "USD",
     plan: s.plan as Store["plan"],
     created_at: s.createdAt.toISOString(),
     updated_at: s.updatedAt.toISOString(),
@@ -31,6 +31,9 @@ export function mapPrismaSectionToSection(s: PrismaSection): Section {
 }
 
 export function mapPrismaProductToProduct(p: PrismaProduct): Product {
+  const imageUrls = (p as PrismaProduct & { imageUrls?: string[] }).imageUrls ?? []
+  const sizes = "sizes" in p && Array.isArray((p as { sizes?: string[] }).sizes) ? (p as { sizes: string[] }).sizes : []
+  const colors = "colors" in p && Array.isArray((p as { colors?: string[] }).colors) ? (p as { colors: string[] }).colors : []
   return {
     id: p.id,
     store_id: p.storeId,
@@ -39,6 +42,9 @@ export function mapPrismaProductToProduct(p: PrismaProduct): Product {
     description: p.description,
     price: p.price,
     image_url: p.imageUrl,
+    image_urls: imageUrls.length > 0 ? imageUrls : (p.imageUrl ? [p.imageUrl] : []),
+    sizes,
+    colors,
     status: p.status as Product["status"],
     created_at: p.createdAt.toISOString(),
     updated_at: p.updatedAt.toISOString(),

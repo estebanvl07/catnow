@@ -2,6 +2,7 @@
 
 import { useCartStore } from "@/lib/cart-store"
 import { formatPrice } from "@/lib/format-price"
+import { getProductFirstImage } from "@/lib/product-image"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -28,6 +29,13 @@ export function CartDrawer({ whatsappNumber, storeName, currency = "USD" }: Cart
   const itemCount = getItemCount()
   const total = getTotal()
 
+  function itemLine(item: (typeof items)[0]) {
+    const parts = [item.product.name]
+    if (item.size) parts.push(`Talla: ${item.size}`)
+    if (item.color) parts.push(`Color: ${item.color}`)
+    return parts.join(" · ")
+  }
+
   function handleCheckout() {
     if (!whatsappNumber || items.length === 0) return
 
@@ -35,7 +43,7 @@ export function CartDrawer({ whatsappNumber, storeName, currency = "USD" }: Cart
     const itemLines = items
       .map(
         (item, i) =>
-          `${i + 1}. *${item.product.name}* x${item.quantity} - ${formatPrice(Number(item.product.price) * item.quantity, currency)}`,
+          `${i + 1}. *${itemLine(item)}* x${item.quantity} - ${formatPrice(Number(item.product.price) * item.quantity, currency)}`,
       )
       .join("\n")
     const footer = `\n\n*Total: ${formatPrice(total, currency)}*\n\nGracias!`
@@ -75,63 +83,72 @@ export function CartDrawer({ whatsappNumber, storeName, currency = "USD" }: Cart
           <>
             <div className="flex-1 overflow-y-auto">
               <div className="flex flex-col gap-4 py-4">
-                {items.map((item) => (
-                  <div key={item.product.id} className="flex items-start gap-3">
-                    {item.product.image_url ? (
-                      <img
-                        src={item.product.image_url || "/placeholder.svg"}
-                        alt={item.product.name}
-                        className="h-16 w-16 shrink-0 rounded-lg border border-border object-cover"
-                        crossOrigin="anonymous"
-                      />
-                    ) : (
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-border bg-muted">
-                        <ShoppingCart className="h-5 w-5 text-muted-foreground/40" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-foreground line-clamp-1">
-                        {item.product.name}
-                      </h4>
-                      <p className="text-sm font-semibold text-foreground">
-                        {formatPrice(Number(item.product.price), currency)}
-                      </p>
-                      <div className="mt-1.5 flex items-center gap-1.5">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-7 w-7 bg-transparent"
-                          onClick={() =>
-                            updateQuantity(item.product.id, item.quantity - 1)
-                          }
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-6 text-center text-sm font-medium">
-                          {item.quantity}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-7 w-7 bg-transparent"
-                          onClick={() =>
-                            updateQuantity(item.product.id, item.quantity + 1)
-                          }
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="ml-auto h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => removeItem(item.product.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                {items.map((item) => {
+                  const options = { size: item.size, color: item.color }
+                  const itemId = `${item.product.id}-${item.size ?? ""}-${item.color ?? ""}`
+                  return (
+                    <div key={itemId} className="flex items-start gap-3">
+                      {getProductFirstImage(item.product) ? (
+                        <img
+                          src={getProductFirstImage(item.product) ?? "/placeholder.svg"}
+                          alt={item.product.name}
+                          className="h-16 w-16 shrink-0 rounded-lg border border-border object-cover"
+                          crossOrigin="anonymous"
+                        />
+                      ) : (
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-border bg-muted">
+                          <ShoppingCart className="h-5 w-5 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-foreground line-clamp-1">
+                          {item.product.name}
+                        </h4>
+                        {(item.size || item.color) && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {[item.size, item.color].filter(Boolean).join(" · ")}
+                          </p>
+                        )}
+                        <p className="text-sm font-semibold text-foreground">
+                          {formatPrice(Number(item.product.price), currency)}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7 bg-transparent"
+                            onClick={() =>
+                              updateQuantity(item.product.id, item.quantity - 1, options)
+                            }
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-6 text-center text-sm font-medium">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7 bg-transparent"
+                            onClick={() =>
+                              updateQuantity(item.product.id, item.quantity + 1, options)
+                            }
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="ml-auto h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={() => removeItem(item.product.id, options)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
             <Separator />
