@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  name           String
+  slug           String   @unique
+  logoUrl        String?  @map("logo_url")
+  whatsappNumber String?  @map("whatsapp_number")
+  primaryColor   String   @default("indigo") @map("primary_color")
+  layoutTemplate String   @default("classic") @map("layout_template")
+  plan           String   @default("small")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  sections Section[]
+  products Product[]
+}
+
+model Section {
+  id          String   @id @default(uuid())
+  storeId     String   @map("store_id")
+  name        String
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  store    Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  storeId     String   @map("store_id")
+  sectionId   String?  @map("section_id")
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?  @map("image_url")
+  status      String   @default("active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  section Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+}

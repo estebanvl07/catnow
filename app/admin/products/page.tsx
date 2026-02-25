@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import {
+  getMyStore,
+  getMyProductsAndSections,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "@/app/admin/actions";
 import { Plus, Pencil, Trash2, Loader2, Package, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,36 +55,15 @@ export default function AdminProductsPage() {
   const [formActive, setFormActive] = useState(true);
 
   const fetchData = useCallback(async () => {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: store } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!store) return;
-    setStoreId(store.id);
-
-    const [productsRes, sectionsRes] = await Promise.all([
-      supabase
-        .from("products")
-        .select("*")
-        .eq("store_id", store.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("sections")
-        .select("*")
-        .eq("store_id", store.id)
-        .order("sort_order", { ascending: true }),
+    const [store, data] = await Promise.all([
+      getMyStore(),
+      getMyProductsAndSections(),
     ]);
-
-    setProducts(productsRes.data || []);
-    setSections(sectionsRes.data || []);
+    if (store) setStoreId(store.id);
+    if (data) {
+      setProducts(data.products);
+      setSections(data.sections);
+    }
     setLoading(false);
   }, []);
 
@@ -111,38 +96,25 @@ export default function AdminProductsPage() {
   async function handleSave() {
     if (!formName.trim() || !storeId || !formPrice) return;
     setSaving(true);
-    const supabase = createClient();
 
     const payload = {
-      store_id: storeId,
+      storeId,
       name: formName.trim(),
       description: formDesc.trim() || null,
       price: Number.parseFloat(formPrice),
-      section_id: formSection === "none" ? null : formSection,
-      image_url: formImageUrl?.trim() || null,
+      sectionId: formSection === "none" ? null : formSection,
+      imageUrl: formImageUrl?.trim() || null,
       status: formActive ? ("active" as const) : ("inactive" as const),
-      updated_at: new Date().toISOString(),
     };
 
     if (editing) {
-      const { error } = await supabase
-        .from("products")
-        .update(payload)
-        .eq("id", editing.id);
-
-      if (error) {
-        toast.error("Error al actualizar el producto");
-      } else {
-        toast.success("Producto actualizado");
-      }
+      const res = await updateProduct(editing.id, payload);
+      if (res.success) toast.success("Producto actualizado");
+      else toast.error(res.error ?? "Error al actualizar el producto");
     } else {
-      const { error } = await supabase.from("products").insert(payload);
-
-      if (error) {
-        toast.error("Error al crear el producto");
-      } else {
-        toast.success("Producto creado");
-      }
+      const res = await createProduct(payload);
+      if (res.success) toast.success("Producto creado");
+      else toast.error(res.error ?? "Error al crear el producto");
     }
 
     setSaving(false);
@@ -151,14 +123,10 @@ export default function AdminProductsPage() {
   }
 
   async function handleDelete(id: string) {
-    const supabase = createClient();
-    const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) {
-      toast.error("Error al eliminar el producto");
-    } else {
-      toast.success("Producto eliminado");
-      fetchData();
-    }
+    const res = await deleteProduct(id);
+    if (res.success) toast.success("Producto eliminado");
+    else toast.error(res.error ?? "Error al eliminar el producto");
+    fetchData();
   }
 
   const sectionMap = new Map(sections.map((s) => [s.id, s.name]));

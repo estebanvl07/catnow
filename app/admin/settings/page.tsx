@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { createClient } from "@/lib/supabase/client"
-import { Loader2, Save, Eye } from "lucide-react"
+import { getMyStore, updateStore } from "@/app/admin/actions"
+import { Loader2, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -40,18 +40,7 @@ export default function AdminSettingsPage() {
   const [layoutTemplate, setLayoutTemplate] = useState<LayoutTemplate>("classic")
 
   const fetchStore = useCallback(async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return
-
-    const { data } = await supabase
-      .from("stores")
-      .select("*")
-      .eq("user_id", user.id)
-      .single()
-
+    const data = await getMyStore()
     if (data) {
       setStore(data)
       setName(data.name)
@@ -70,25 +59,21 @@ export default function AdminSettingsPage() {
   async function handleSave() {
     if (!store) return
     setSaving(true)
-    const supabase = createClient()
 
-    const { error } = await supabase
-      .from("stores")
-      .update({
-        name: name.trim(),
-        whatsapp_number: whatsapp.trim() || null,
-        logo_url: logoUrl.trim() || null,
-        primary_color: primaryColor,
-        layout_template: layoutTemplate,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", store.id)
+    const res = await updateStore({
+      storeId: store.id,
+      name: name.trim(),
+      whatsappNumber: whatsapp.trim() || null,
+      logoUrl: logoUrl.trim() || null,
+      primaryColor,
+      layoutTemplate,
+    })
 
-    if (error) {
-      toast.error("Error al guardar la configuracion")
-    } else {
+    if (res.success) {
       toast.success("Configuracion guardada")
       fetchStore()
+    } else {
+      toast.error(res.error ?? "Error al guardar la configuracion")
     }
     setSaving(false)
   }

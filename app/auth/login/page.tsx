@@ -1,19 +1,13 @@
 "use client"
 
-import { createClient } from "@/lib/supabase/client"
+import { signIn } from "next-auth/react"
 import { ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 export default function LoginPage() {
   async function handleGoogleLogin() {
-    const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    await signIn("google", { callbackUrl: "/admin" })
   }
 
   return (

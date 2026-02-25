@@ -1,7 +1,13 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { createClient } from "@/lib/supabase/client"
+import {
+  getMyStore,
+  getMySections,
+  createSection,
+  updateSection,
+  deleteSection,
+} from "@/app/admin/actions"
 import {
   Plus,
   Pencil,
@@ -35,28 +41,9 @@ export default function AdminSectionsPage() {
   const [storeId, setStoreId] = useState<string | null>(null)
 
   const fetchSections = useCallback(async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return
-
-    const { data: store } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("user_id", user.id)
-      .single()
-
-    if (!store) return
-    setStoreId(store.id)
-
-    const { data } = await supabase
-      .from("sections")
-      .select("*")
-      .eq("store_id", store.id)
-      .order("sort_order", { ascending: true })
-
-    setSections(data || [])
+    const [store, data] = await Promise.all([getMyStore(), getMySections()])
+    if (store) setStoreId(store.id)
+    setSections(data)
     setLoading(false)
   }, [])
 
@@ -81,36 +68,22 @@ export default function AdminSectionsPage() {
   async function handleSave() {
     if (!formName.trim() || !storeId) return
     setSaving(true)
-    const supabase = createClient()
 
     if (editing) {
-      const { error } = await supabase
-        .from("sections")
-        .update({
-          name: formName.trim(),
-          description: formDesc.trim() || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", editing.id)
-
-      if (error) {
-        toast.error("Error al actualizar la seccion")
-      } else {
-        toast.success("Seccion actualizada")
-      }
-    } else {
-      const { error } = await supabase.from("sections").insert({
-        store_id: storeId,
+      const res = await updateSection(editing.id, {
         name: formName.trim(),
         description: formDesc.trim() || null,
-        sort_order: sections.length,
       })
-
-      if (error) {
-        toast.error("Error al crear la seccion")
-      } else {
-        toast.success("Seccion creada")
-      }
+      if (res.success) toast.success("Seccion actualizada")
+      else toast.error(res.error ?? "Error al actualizar la seccion")
+    } else {
+      const res = await createSection({
+        name: formName.trim(),
+        description: formDesc.trim() || null,
+        sortOrder: sections.length,
+      })
+      if (res.success) toast.success("Seccion creada")
+      else toast.error(res.error ?? "Error al crear la seccion")
     }
 
     setSaving(false)
@@ -119,14 +92,10 @@ export default function AdminSectionsPage() {
   }
 
   async function handleDelete(id: string) {
-    const supabase = createClient()
-    const { error } = await supabase.from("sections").delete().eq("id", id)
-    if (error) {
-      toast.error("Error al eliminar. Verifica que no tenga productos asociados.")
-    } else {
-      toast.success("Seccion eliminada")
-      fetchSections()
-    }
+    const res = await deleteSection(id)
+    if (res.success) toast.success("Seccion eliminada")
+    else toast.error(res.error ?? "Error al eliminar")
+    fetchSections()
   }
 
   return (

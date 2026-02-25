@@ -1,10 +1,8 @@
 "use client"
 
-import React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { createStore } from "@/app/admin/actions"
 import { ShoppingBag, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,40 +35,17 @@ export default function OnboardingPage() {
     }
 
     setLoading(true)
-    const supabase = createClient()
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      toast.error("No se encontro tu sesion. Por favor inicia sesion de nuevo.")
-      router.push("/auth/login")
-      return
-    }
-
-    // Check if slug is available
-    const { data: existing } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("slug", slug.trim())
-      .single()
-
-    if (existing) {
-      toast.error("Ese slug ya esta en uso. Elige otro.")
-      setLoading(false)
-      return
-    }
-
-    const { error } = await supabase.from("stores").insert({
-      user_id: user.id,
+    const res = await createStore({
       name: storeName.trim(),
       slug: slug.trim(),
-      whatsapp_number: whatsapp.trim() || null,
+      whatsappNumber: whatsapp.trim() || null,
     })
 
-    if (error) {
-      toast.error("Error al crear tu tienda. Intenta de nuevo.")
+    if (!res.success) {
+      toast.error(res.error ?? "Error al crear tu tienda. Intenta de nuevo.")
+      if (res.error === "No autorizado" || res.error?.includes("sesion"))
+        router.push("/auth/login")
       setLoading(false)
       return
     }

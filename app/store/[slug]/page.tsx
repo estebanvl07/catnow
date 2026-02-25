@@ -1,4 +1,9 @@
-import { createClient } from "@/lib/supabase/server"
+import { prisma } from "@/lib/prisma"
+import {
+  mapPrismaStoreToStore,
+  mapPrismaSectionToSection,
+  mapPrismaProductToProduct,
+} from "@/lib/db"
 import { notFound } from "next/navigation"
 import { StoreRenderer } from "@/components/store/store-renderer"
 import type { Metadata } from "next"
@@ -7,14 +12,14 @@ interface StorePageProps {
   params: Promise<{ slug: string }>
 }
 
-export async function generateMetadata({ params }: StorePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: StorePageProps): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createClient()
-  const { data: store } = await supabase
-    .from("stores")
-    .select("name")
-    .eq("slug", slug)
-    .single()
+  const store = await prisma.store.findUnique({
+    where: { slug },
+    select: { name: true },
+  })
 
   if (!store) {
     return { title: "Tienda no encontrada" }
@@ -28,37 +33,33 @@ export async function generateMetadata({ params }: StorePageProps): Promise<Meta
 
 export default async function StorePage({ params }: StorePageProps) {
   const { slug } = await params
-  const supabase = await createClient()
 
-  const { data: store } = await supabase
-    .from("stores")
-    .select("*")
-    .eq("slug", slug)
-    .single()
+  const storeRow = await prisma.store.findUnique({
+    where: { slug },
+    include: {
+      products: {
+        where: { status: "active" },
+        orderBy: { createdAt: "desc" },
+      },
+      sections: {
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+  })
 
-  if (!store) {
+  if (!storeRow) {
     notFound()
   }
 
-  const [productsRes, sectionsRes] = await Promise.all([
-    supabase
-      .from("products")
-      .select("*")
-      .eq("store_id", store.id)
-      .eq("status", "active")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("sections")
-      .select("*")
-      .eq("store_id", store.id)
-      .order("sort_order", { ascending: true }),
-  ])
+  const store = mapPrismaStoreToStore(storeRow)
+  const products = storeRow.products.map(mapPrismaProductToProduct)
+  const sections = storeRow.sections.map(mapPrismaSectionToSection)
 
   return (
     <StoreRenderer
       store={store}
-      products={productsRes.data || []}
-      sections={sectionsRes.data || []}
+      products={products}
+      sections={sections}
     />
   )
 }

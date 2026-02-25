@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { usePathname } from "next/navigation"
+import { signOut } from "next-auth/react"
 import {
   ShoppingBag,
   LayoutGrid,
@@ -33,13 +33,10 @@ export function AdminSidebar({
   userEmail: string
 }) {
   const pathname = usePathname()
-  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/")
+    await signOut({ callbackUrl: "/" })
   }
 
   const sidebarContent = (
