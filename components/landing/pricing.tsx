@@ -10,7 +10,7 @@ const plans = [
     period: "/mes",
     description: "Ideal para empezar tu negocio online.",
     features: [
-      "Hasta 50 productos",
+      "Hasta 25 productos",
       "1 catalogo personalizado",
       "Pedidos por WhatsApp",
       "3 disenos de catalogo",
@@ -25,7 +25,7 @@ const plans = [
     period: "/mes",
     description: "Para negocios en crecimiento.",
     features: [
-      "Hasta 300 productos",
+      "Hasta 150 productos",
       "1 catalogo personalizado",
       "Pedidos por WhatsApp",
       "3 disenos de catalogo",
@@ -37,12 +37,12 @@ const plans = [
     badge: "Popular",
   },
   {
-    name: "SuperStore",
-    price: "$39",
+    name: "Super store",
+    price: "$39.900",
     period: "/mes",
     description: "Para tiendas con gran inventario.",
     features: [
-      "Hasta 600 productos",
+      "Hasta 300 productos",
       "1 catalogo personalizado",
       "Pedidos por WhatsApp",
       "3 disenos de catalogo",
