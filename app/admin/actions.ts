@@ -245,7 +245,7 @@ export async function updateStore(form: {
   if (!storeId || storeId !== form.storeId)
     return { success: false, error: "No autorizado" }
   try {
-    await prisma.store.update({
+    const updated = await prisma.store.update({
       where: { id: form.storeId },
       data: {
         name: form.name.trim(),
@@ -254,9 +254,11 @@ export async function updateStore(form: {
         primaryColor: form.primaryColor,
         layoutTemplate: form.layoutTemplate,
       },
+      select: { slug: true },
     })
     revalidatePath("/admin")
     revalidatePath("/admin/settings")
+    revalidatePath(`/store/${updated.slug}`)
     return { success: true }
   } catch {
     return { success: false, error: "Error al guardar la configuración" }

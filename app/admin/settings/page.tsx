@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import type { Store, LayoutTemplate } from "@/lib/types"
 import { LayoutPreview } from "@/components/admin/layout-preview"
+import { getStoreColorStyles } from "@/lib/store-colors"
 
 const colorOptions = [
   { value: "indigo", label: "Indigo", class: "bg-indigo-500" },
@@ -181,35 +182,48 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            {/* Layout picker */}
-            <div className="rounded-2xl border border-border bg-card p-6">
+            {/* Layout picker: el wrapper aplica el color elegido para que el preview lo refleje */}
+            <div
+              className="rounded-2xl border border-border bg-card p-6"
+              style={getStoreColorStyles(primaryColor)}
+            >
               <Label className="mb-4 block text-base font-medium">
                 Diseno del catalogo
               </Label>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {(["classic", "modern", "minimal"] as LayoutTemplate[]).map(
-                  (layout) => (
-                    <button
-                      key={layout}
-                      type="button"
-                      onClick={() => setLayoutTemplate(layout)}
-                      className={`group flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-colors ${
-                        layoutTemplate === layout
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/30"
-                      }`}
-                    >
-                      <LayoutPreview layout={layout} />
-                      <span className="text-sm font-medium capitalize text-foreground">
-                        {layout === "classic"
-                          ? "Clasico"
-                          : layout === "modern"
-                            ? "Moderno"
-                            : "Minimalista"}
-                      </span>
-                    </button>
-                  )
-                )}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                {(
+                  [
+                    "classic",
+                    "modern",
+                    "minimal",
+                    "cards",
+                    "compact",
+                  ] as LayoutTemplate[]
+                ).map((layout) => (
+                  <button
+                    key={layout}
+                    type="button"
+                    onClick={() => setLayoutTemplate(layout)}
+                    className={`group flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-colors ${
+                      layoutTemplate === layout
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <LayoutPreview layout={layout} />
+                    <span className="text-center text-sm font-medium capitalize text-foreground">
+                      {layout === "classic"
+                        ? "Clásico"
+                        : layout === "modern"
+                          ? "Moderno"
+                          : layout === "minimal"
+                            ? "Minimalista"
+                            : layout === "cards"
+                              ? "Tarjetas"
+                              : "Compacto"}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
 

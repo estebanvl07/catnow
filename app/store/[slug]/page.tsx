@@ -6,6 +6,7 @@ import {
 } from "@/lib/db"
 import { notFound } from "next/navigation"
 import { StoreRenderer } from "@/components/store/store-renderer"
+import { StoreThemeWrapper } from "@/components/store/store-theme-wrapper"
 import type { Metadata } from "next"
 
 interface StorePageProps {
@@ -56,10 +57,12 @@ export default async function StorePage({ params }: StorePageProps) {
   const sections = storeRow.sections.map(mapPrismaSectionToSection)
 
   return (
-    <StoreRenderer
-      store={store}
-      products={products}
-      sections={sections}
-    />
+    <StoreThemeWrapper store={store}>
+      <StoreRenderer
+        store={store}
+        products={products}
+        sections={sections}
+      />
+    </StoreThemeWrapper>
   )
 }

@@ -1,4 +1,9 @@
-export type LayoutTemplate = "classic" | "modern" | "minimal"
+export type LayoutTemplate =
+  | "classic"
+  | "modern"
+  | "minimal"
+  | "cards"
+  | "compact"
 export type PlanType = "small" | "medium" | "superstore" | "custom"
 export type ProductStatus = "active" | "inactive"
 
